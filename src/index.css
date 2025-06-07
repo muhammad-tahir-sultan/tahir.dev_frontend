@@ -2,13 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide scrollbars and prevent horizontal overflow */
+html, body {
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
 
-::webkit-scrollbar{
+/* Fix for WebKit browsers */
+::-webkit-scrollbar{
   display: none !important;
+}
+
+/* Fix for Firefox and other browsers */
+* {
+  scrollbar-width: none;
 }
 
 body {
   cursor: url("/cursor.png"), auto;
+  margin: 0;
+  padding: 0;
 }
 
 .speedDial {

@@ -20,13 +20,14 @@ const ParticleComponent = () => {
   const { darkMode } = useSelector((state) => state.theme);
 
   return (
-    <div className="fixed inset-0 z-0" aria-hidden="true">
+    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
       <Particles
         id="tsparticles"
         init={particlesInit}
         loaded={particlesLoaded}
         options={{
-          fpsLimit: 60, // Lower for better performance
+          fullScreen: { enable: false },
+          fpsLimit: 40, // Lower for better performance
           interactivity: {
             events: {
               onClick: {
@@ -67,15 +68,15 @@ const ParticleComponent = () => {
                 default: "bounce",
               },
               random: false,
-              speed: 4, // Slower for better performance
+              speed: 3, // Slower for better performance
               straight: false,
             },
             number: {
               density: {
                 enable: true,
-                area: 1000, // Larger area = fewer particles
+                area: 1200, // Larger area = fewer particles
               },
-              value: 60, // Reduced number of particles
+              value: 50, // Reduced number of particles
             },
             opacity: {
               value: 0.4,
@@ -87,7 +88,7 @@ const ParticleComponent = () => {
               value: { min: 1, max: 2 },
             },
           },
-          detectRetina: true,
+          detectRetina: false, // Disable for better performance
           pauseOnOutsideViewport: true, // Pause when not visible for performance
         }}
       />

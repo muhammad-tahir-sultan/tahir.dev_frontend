@@ -107,108 +107,110 @@ const HeaderWithRoutes = () => {
   }
 
   return (
-    <div className={` ${darkMode ? `dark:bg-gradient-to-r from-[#000428] to-[#004e92] dark:text-white` : `bg-gradient-to-r from-blue-300 to-[#0210a9]`}`}>
+    <div className={` overflow-x-hidden relative w-full ${darkMode ? `dark:bg-gradient-to-r from-[#000428] to-[#004e92] dark:text-white` : `bg-gradient-to-r from-blue-300 to-[#0210a9]`}`}>
       {!location.pathname.startsWith('/dashboard') && <Header />}
       {user && <UserOptions user={user} />}
       <ParticleComponent />
 
-      <Routes>
-        {/* Public Routes */}
-        <Route path='/' element={<Home />} />
-        <Route path='/projects' element={<Projects />} />
-        <Route path='/about' element={<About />} />
-        <Route path='/services' element={<Services />} />
-        <Route path='/contact' element={<Contact />} />
-        <Route path='/blogs' element={<Blogs />} />
-        <Route path='/blog/:id' element={<Blog />} />
-        <Route path='/forgotpassword' element={<ForgotPassword />} />
-        <Route path='/password/reset/:token' element={<ResetPassword />} />
-        <Route path='/auth-check' element={<AuthCheck />} />
-        <Route path='/login' element={<LoginForm />} />
-        <Route path='/register' element={<SignUpForm />} />
-        
-        {/* Protected User Routes */}
-        <Route path='/profile' element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        } />
-        <Route path='/editprofile' element={
-          <ProtectedRoute>
-            <EditProfile />
-          </ProtectedRoute>
-        } />
+      <div className="overflow-x-hidden w-full">
+        <Routes>
+          {/* Public Routes */}
+          <Route path='/' element={<Home />} />
+          <Route path='/projects' element={<Projects />} />
+          <Route path='/about' element={<About />} />
+          <Route path='/services' element={<Services />} />
+          <Route path='/contact' element={<Contact />} />
+          <Route path='/blogs' element={<Blogs />} />
+          <Route path='/blog/:id' element={<Blog />} />
+          <Route path='/forgotpassword' element={<ForgotPassword />} />
+          <Route path='/password/reset/:token' element={<ResetPassword />} />
+          <Route path='/auth-check' element={<AuthCheck />} />
+          <Route path='/login' element={<LoginForm />} />
+          <Route path='/register' element={<SignUpForm />} />
+          
+          {/* Protected User Routes */}
+          <Route path='/profile' element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path='/editprofile' element={
+            <ProtectedRoute>
+              <EditProfile />
+            </ProtectedRoute>
+          } />
 
-        {/* Protected Admin Routes */}
-        <Route path='/dashboard' element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-        <Route path='/dashboard/projects' element={
-          <ProtectedRoute>
-            <AdminProjects />
-          </ProtectedRoute>
-        } />
-        <Route path='/dashboard/blogs' element={
-          <ProtectedRoute>
-            <AdminBlogs />
-          </ProtectedRoute>
-        } />
-        <Route path='/dashboard/blog/create' element={
-          <ProtectedRoute>
-            <AddBlog />
-          </ProtectedRoute>
-        } />
-        <Route path='/dashboard/blog/edit/:id' element={
-          <ProtectedRoute>
-            <EditBlog />
-          </ProtectedRoute>
-        } />
-        <Route path='/dashboard/categories' element={
-          <ProtectedRoute>
-            <Categories />
-          </ProtectedRoute>
-        } />
-        <Route path='/dashboard/category/add' element={
-          <ProtectedRoute>
-            <AddCategory />
-          </ProtectedRoute>
-        } />
-        <Route path='/dashboard/category/edit/:id' element={
-          <ProtectedRoute>
-            <EditCategory />
-          </ProtectedRoute>
-        } />
-        <Route path='/dashboard/addprojects' element={
-          <ProtectedRoute>
-            <AddProject />
-          </ProtectedRoute>
-        } />
-        <Route path='/dashboard/testimonials' element={
-          <ProtectedRoute>
-            <Testimonials />
-          </ProtectedRoute>
-        } />
-        <Route path='/dashboard/project/:id' element={
-          <ProtectedRoute>
-            <EditProject />
-          </ProtectedRoute>
-        } />
-        <Route path='/dashboard/users' element={
-          <ProtectedRoute>
-            <Users />
-          </ProtectedRoute>
-        } />
-        <Route path='/dashboard/user/:id' element={
-          <ProtectedRoute>
-            <UpdateRole />
-          </ProtectedRoute>
-        } />
-        
-        {/* Catch-all route for 404 */}
-        <Route path='*' element={<PageNotFound />} />
-      </Routes>
+          {/* Protected Admin Routes */}
+          <Route path='/dashboard' element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path='/dashboard/projects' element={
+            <ProtectedRoute>
+              <AdminProjects />
+            </ProtectedRoute>
+          } />
+          <Route path='/dashboard/blogs' element={
+            <ProtectedRoute>
+              <AdminBlogs />
+            </ProtectedRoute>
+          } />
+          <Route path='/dashboard/blog/create' element={
+            <ProtectedRoute>
+              <AddBlog />
+            </ProtectedRoute>
+          } />
+          <Route path='/dashboard/blog/edit/:id' element={
+            <ProtectedRoute>
+              <EditBlog />
+            </ProtectedRoute>
+          } />
+          <Route path='/dashboard/categories' element={
+            <ProtectedRoute>
+              <Categories />
+            </ProtectedRoute>
+          } />
+          <Route path='/dashboard/category/add' element={
+            <ProtectedRoute>
+              <AddCategory />
+            </ProtectedRoute>
+          } />
+          <Route path='/dashboard/category/edit/:id' element={
+            <ProtectedRoute>
+              <EditCategory />
+            </ProtectedRoute>
+          } />
+          <Route path='/dashboard/addprojects' element={
+            <ProtectedRoute>
+              <AddProject />
+            </ProtectedRoute>
+          } />
+          <Route path='/dashboard/testimonials' element={
+            <ProtectedRoute>
+              <Testimonials />
+            </ProtectedRoute>
+          } />
+          <Route path='/dashboard/project/:id' element={
+            <ProtectedRoute>
+              <EditProject />
+            </ProtectedRoute>
+          } />
+          <Route path='/dashboard/users' element={
+            <ProtectedRoute>
+              <Users />
+            </ProtectedRoute>
+          } />
+          <Route path='/dashboard/user/:id' element={
+            <ProtectedRoute>
+              <UpdateRole />
+            </ProtectedRoute>
+          } />
+          
+          {/* Catch-all route for 404 */}
+          <Route path='*' element={<PageNotFound />} />
+        </Routes>
+      </div>
       <Footer />
     </div>
   );

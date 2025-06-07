@@ -1,6 +1,7 @@
 import React, { useRef } from 'react'
 import { animate, motion } from "framer-motion"
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 const IndustryExperince = () => {
   const { darkMode } = useSelector((state) => state.theme);
@@ -89,8 +90,8 @@ const IndustryExperince = () => {
               <p className={`mb-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
                 I am ready to help you achieve your business goals with cutting-edge solutions tailored to your needs.
               </p>
-              <a 
-                href="#contact" 
+              <Link 
+                to="/contact" 
                 className={`inline-flex items-center px-6 py-3 rounded-lg font-medium transition-all transform hover:scale-105 ${
                   darkMode 
                     ? "bg-blue-600 hover:bg-blue-700 text-white" 
@@ -101,7 +102,7 @@ const IndustryExperince = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </a>
+              </Link>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
