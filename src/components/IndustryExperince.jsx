@@ -34,7 +34,7 @@ const IndustryExperince = () => {
       <div className="container px-4 mx-auto">
         <div className="text-center mb-16">
           <h2 className={`text-4xl font-bold mb-4 ${darkMode ? "text-blue-400" : "text-blue-600"}`}>
-            Our Experience
+            My Experience
           </h2>
           <div className="w-24 h-1 bg-blue-500 mx-auto mb-6"></div>
           <p className={`max-w-2xl mx-auto text-lg ${darkMode ? "text-gray-300" : "text-gray-600"}`}>

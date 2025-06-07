@@ -5,6 +5,8 @@ import HeroSection from '../layout/HeroSection'
 import ServicesCard from '../ServicesCard'
 import IndustryExperince from '../IndustryExperince'
 import Education from '../Education/Education'
+import Experience from '../Experience/Experience'
+import TestExperience from '../TestExperience'
 import { useSelector } from 'react-redux'
 import { motion } from 'framer-motion'
 
@@ -41,6 +43,10 @@ const Home = () => {
       >
         <Education />
       </motion.div>
+      
+      
+      
+      <Experience />
       
       <motion.div
         initial="hidden"
