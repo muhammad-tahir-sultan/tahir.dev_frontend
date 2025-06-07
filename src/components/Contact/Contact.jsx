@@ -87,7 +87,7 @@ const Contact = () => {
                             <p className="mb-4">Contact me directly via WhatsApp</p>
                             <div className="flex flex-row items-center justify-center">
                                 <a 
-                                    href="https://api.whatsapp.com/send?phone=+923266640988" 
+                                    href="https://api.whatsapp.com/send?phone=923266640988" 
                                     className={`font-medium text-xs sm:text-sm md:text-base inline-flex items-center transition-colors ${darkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-800"}`}
                                     target="_blank" 
                                     rel="noopener noreferrer"
@@ -97,7 +97,7 @@ const Contact = () => {
                                 </a>
                                 <span className="text-gray-400 px-1 mx-0.5">|</span>
                                 <a 
-                                    href="https://api.whatsapp.com/send?phone=+923241553013" 
+                                    href="https://api.whatsapp.com/send?phone=923241553013" 
                                     className={`font-medium text-xs sm:text-sm md:text-base inline-flex items-center transition-colors ${darkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-800"}`}
                                     target="_blank" 
                                     rel="noopener noreferrer"
