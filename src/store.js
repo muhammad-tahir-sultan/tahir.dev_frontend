@@ -14,7 +14,7 @@ const isDevelopment = window.location.hostname === 'localhost' || window.locatio
 // Production URL
 export const server = isDevelopment 
   ? "http://localhost:4000"  // Development server
-  : "https://mern-advanced-portfolio.vercel.app"; // Production server
+  : "https://tahir-dev-backend.vercel.app" ; // Production server
 
 export const store = configureStore({
   reducer: {
