@@ -2,9 +2,15 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import Typewriter from 'typewriter-effect';
+import { useNavigate } from 'react-router-dom';
 
 const Services = () => {
     const { darkMode } = useSelector((state) => state.theme);
+    const navigate = useNavigate();
+    
+    const handleNavigateToContact = () => {
+        navigate('/contact');
+    };
 
     const services = [
         {
@@ -434,39 +440,26 @@ const Services = () => {
                             Let's collaborate to bring your ideas to life. Whether you need a simple website or a complex web application,
                             I'm here to help you achieve your goals with high-quality development services.
                         </motion.p>
-                        <motion.a 
-                            href="https://wa.me/923266640988" 
-                            target="_blank"
-                            rel="noopener noreferrer" 
-                            className={`inline-flex items-center px-8 py-4 rounded-lg font-medium text-white ${
+                        <button 
+                            onClick={() => window.location.href = '/contact'}
+                            className={`inline-flex items-center px-8 py-4 rounded-lg font-medium text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg ${
                                 darkMode 
                                 ? "bg-blue-600 hover:bg-blue-700" 
                                 : "bg-blue-600 hover:bg-blue-700"
                             }`}
-                            variants={buttonVariants}
-                            whileHover="hover"
-                            whileTap="tap"
                         >
-                            <motion.span
-                                className="flex items-center"
-                                initial={{ x: 0 }}
-                                whileHover={{ x: -5 }}
-                                transition={{ type: "spring", stiffness: 200 }}
-                            >
+                            <span className="flex items-center">
                                 Contact Me
-                                <motion.svg 
+                                <svg 
                                     xmlns="http://www.w3.org/2000/svg" 
-                                    className="h-5 w-5 ml-2" 
+                                    className="h-5 w-5 ml-2 transition-transform duration-300" 
                                     viewBox="0 0 20 20" 
                                     fill="currentColor"
-                                    initial={{ x: 0 }}
-                                    whileHover={{ x: 5 }}
-                                    transition={{ type: "spring", stiffness: 200 }}
                                 >
                                     <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                                </motion.svg>
-                            </motion.span>
-                        </motion.a>
+                                </svg>
+                            </span>
+                        </button>
                     </motion.div>
                 </div>
             </motion.section>

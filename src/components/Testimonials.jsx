@@ -15,12 +15,12 @@ const Testimonials = () => {
 
     useEffect(() => {
         dispatch(getAllTestimonials())
-    }, [error, message])
+    }, [dispatch, error, message])
 
     const [isOpen, setIsOpen] = useState(false)
 
     const handleReview = () => {
-        setIsOpen(!isOpen)
+        setIsOpen(true)
     }
 
     return (
@@ -45,6 +45,7 @@ const Testimonials = () => {
                                     ? "bg-blue-600 hover:bg-blue-700 text-white" 
                                     : "bg-blue-600 hover:bg-blue-700 text-white"
                             }`}
+                            aria-label="Share your experience"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -61,6 +62,7 @@ const Testimonials = () => {
                                     ? "bg-gray-700 hover:bg-gray-600 text-white" 
                                     : "bg-white hover:bg-gray-100 text-gray-800 border border-gray-200"
                             }`}
+                            aria-label="Login to submit a review"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
@@ -70,7 +72,7 @@ const Testimonials = () => {
                     </div>
                 )}
 
-                {isOpen && <AddReview onClose={() => setIsOpen(!isOpen)} />}
+                {isOpen && <AddReview onClose={() => setIsOpen(false)} />}
 
                 {loading ? (
                     <div className="flex justify-center py-20">
@@ -81,7 +83,7 @@ const Testimonials = () => {
                         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-600"></div>
                         
                         <div className="absolute opacity-10 top-10 left-10">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="w-24 h-24 text-blue-500" viewBox="0 0 975.036 975.036">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="w-24 h-24 text-blue-500" viewBox="0 0 975.036 975.036" aria-hidden="true">
                                 <path d="M925.036 57.197h-304c-27.6 0-50 22.4-50 50v304c0 27.601 22.4 50 50 50h145.5c-1.9 79.601-20.4 143.3-55.4 191.2-27.6 37.8-69.399 69.1-125.3 93.8-25.7 11.3-36.8 41.7-24.8 67.101l36 76c11.6 24.399 40.3 35.1 65.1 24.399 66.2-28.6 122.101-64.8 167.7-108.8 55.601-53.7 93.7-114.3 114.3-181.9 20.601-67.6 30.9-159.8 30.9-276.8v-239c0-27.599-22.401-50-50-50zM106.036 913.497c65.4-28.5 121-64.699 166.9-108.6 56.1-53.7 94.4-114.1 115-181.2 20.6-67.1 30.899-159.6 30.899-277.5v-239c0-27.6-22.399-50-50-50h-304c-27.6 0-50 22.4-50 50v304c0 27.601 22.4 50 50 50h145.5c-1.9 79.601-20.4 143.3-55.4 191.2-27.6 37.8-69.4 69.1-125.3 93.8-25.7 11.3-36.8 41.7-24.8 67.101l35.9 75.8c11.601 24.399 40.501 35.2 65.301 24.399z"></path>
                             </svg>
                         </div>
@@ -101,8 +103,9 @@ const Testimonials = () => {
                                         onClick={onClickHandler} 
                                         title={label} 
                                         className="absolute left-0 z-10 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full p-2 ml-4 focus:outline-none transition-all duration-300"
+                                        aria-label="Previous testimonial"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-white" aria-hidden="true">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                                         </svg>
                                     </button>
@@ -115,8 +118,9 @@ const Testimonials = () => {
                                         onClick={onClickHandler} 
                                         title={label} 
                                         className="absolute right-0 z-10 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full p-2 mr-4 focus:outline-none transition-all duration-300"
+                                        aria-label="Next testimonial"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-white" aria-hidden="true">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                                         </svg>
                                     </button>
@@ -132,16 +136,16 @@ const Testimonials = () => {
                                         <div className="md:w-1/3 flex justify-center mb-8 md:mb-0">
                                             <div className="relative">
                                                 <div className="absolute inset-0 rounded-full bg-blue-500 blur-md opacity-30 transform scale-110"></div>
-                                                                <img
-                                                                    src={testimonial?.user?.image?.url}
+                                                <img
+                                                    src={testimonial?.user?.image?.url}
                                                     className="relative w-32 h-32 md:w-48 md:h-48 rounded-full object-cover border-4 border-white shadow-lg"
-                                                    alt={testimonial?.user?.name}
+                                                    alt={testimonial?.user?.name || "Client"}
                                                 />
                                             </div>
-                                                            </div>
+                                        </div>
 
                                         <div className="md:w-2/3 md:pl-10 text-center md:text-left">
-                                            <div className="flex mb-4 justify-center md:justify-start">
+                                            <div className="flex mb-4 justify-center md:justify-start" aria-label={`Rating: 5 out of 5 stars`}>
                                                 {[1, 2, 3, 4, 5].map((star) => (
                                                     <svg 
                                                         key={star}
@@ -149,6 +153,7 @@ const Testimonials = () => {
                                                         viewBox="0 0 24 24" 
                                                         fill="#FBBF24"
                                                         className="w-5 h-5"
+                                                        aria-hidden="true"
                                                     >
                                                         <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
                                                     </svg>
@@ -163,8 +168,8 @@ const Testimonials = () => {
                                                 <h3 className="text-xl md:text-2xl font-bold">{testimonial.user.name}</h3>
                                                 <p className={`${darkMode ? "text-blue-400" : "text-blue-600"} font-medium`}>
                                                     {testimonial.user.role || "Client"}
-                                                                </p>
-                                                            </div>
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -173,11 +178,11 @@ const Testimonials = () => {
                     </div>
                 ) : (
                     <div className={`text-center py-16 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16 mx-auto mb-4 opacity-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16 mx-auto mb-4 opacity-50" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
                         </svg>
                         <p className="text-xl">No testimonials available yet. Be the first to share your experience!</p>
-                        </div>
+                    </div>
                 )}
             </div>
         </section>

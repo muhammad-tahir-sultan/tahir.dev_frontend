@@ -85,15 +85,27 @@ const Contact = () => {
                             </div>
                             <h2 className="text-xl font-bold mb-2">WhatsApp</h2>
                             <p className="mb-4">Contact me directly via WhatsApp</p>
-                            <a 
-                                href="https://api.whatsapp.com/send?phone=+923266640988" 
-                                className={`font-medium text-lg flex items-center justify-center transition-colors ${darkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-800"}`}
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                            >
-                                <span>+92 326 664 0988 || +92 324 155 3013</span>
-                                <img className='ml-2 h-5 w-5' src="/wa.png" alt="WhatsApp" />
-                            </a>
+                            <div className="flex flex-row items-center justify-center">
+                                <a 
+                                    href="https://api.whatsapp.com/send?phone=+923266640988" 
+                                    className={`font-medium text-xs sm:text-sm md:text-base inline-flex items-center transition-colors ${darkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-800"}`}
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                >
+                                    <span>+92&nbsp;326&nbsp;664&nbsp;0988</span>
+                                    <img className='ml-1 h-3 w-3 sm:h-4 sm:w-4' src="/wa.png" alt="WhatsApp" />
+                                </a>
+                                <span className="text-gray-400 px-1 mx-0.5">|</span>
+                                <a 
+                                    href="https://api.whatsapp.com/send?phone=+923241553013" 
+                                    className={`font-medium text-xs sm:text-sm md:text-base inline-flex items-center transition-colors ${darkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-800"}`}
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                >
+                                    <span>+92&nbsp;324&nbsp;155&nbsp;3013</span>
+                                    <img className='ml-1 h-3 w-3 sm:h-4 sm:w-4' src="/wa.png" alt="WhatsApp" />
+                                </a>
+                            </div>
                         </motion.div>
                     </div>
                 </div>
