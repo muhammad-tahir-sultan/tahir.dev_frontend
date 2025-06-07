@@ -232,7 +232,7 @@ const About = () => {
                         </p>
 
                         <a
-                            href="/Muhammad_Tahir_Resume.pdf"
+                            href="Muhammad_Tahir_Resume.pdf"
                             target="_blank"
                             rel="noopener noreferrer"
                             className={`inline-flex items-center px-8 py-4 rounded-lg font-medium text-white transition-all transform hover:scale-105 ${darkMode
