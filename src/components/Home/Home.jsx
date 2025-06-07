@@ -6,7 +6,6 @@ import ServicesCard from '../ServicesCard'
 import IndustryExperince from '../IndustryExperince'
 import Education from '../Education/Education'
 import Experience from '../Experience/Experience'
-import TestExperience from '../TestExperience'
 import { useSelector } from 'react-redux'
 import { motion } from 'framer-motion'
 
@@ -26,7 +25,7 @@ const Home = () => {
   };
   
   return (
-    <div className={darkMode ? "bg-gray-900" : "bg-white"}>
+    <main className={darkMode ? "bg-gray-900" : "bg-white"}>
       <motion.div
         initial="hidden"
         animate="visible"
@@ -44,9 +43,14 @@ const Home = () => {
         <Education />
       </motion.div>
       
-      
-      
-      <Experience />
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
+        variants={sectionVariants}
+      >
+        <Experience />
+      </motion.div>
       
       <motion.div
         initial="hidden"
@@ -83,7 +87,7 @@ const Home = () => {
       >
         <Testimonials />
       </motion.div>
-    </div>
+    </main>
   )
 }
 

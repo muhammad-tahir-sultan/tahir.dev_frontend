@@ -14,20 +14,19 @@ const ParticleComponent = () => {
   }, []);
 
   const particlesLoaded = useCallback(async container => {
-   
-  }, [])
+    // Container loaded callback
+  }, []);
 
   const { darkMode } = useSelector((state) => state.theme);
 
   return (
-    <div>
+    <div className="fixed inset-0 z-0" aria-hidden="true">
       <Particles
         id="tsparticles"
         init={particlesInit}
         loaded={particlesLoaded}
         options={{
-
-          fpsLimit: 320,
+          fpsLimit: 60, // Lower for better performance
           interactivity: {
             events: {
               onClick: {
@@ -46,7 +45,7 @@ const ParticleComponent = () => {
               },
               repulse: {
                 distance: 100,
-                duration: .7,
+                duration: 0.7,
               },
             },
           },
@@ -56,9 +55,9 @@ const ParticleComponent = () => {
             },
             links: {
               color: darkMode ? "#4b63c2" : "#004e92",
-              distance: 100,
+              distance: 120,
               enable: true,
-              opacity: 0.5,
+              opacity: 0.4,
               width: 1,
             },
             move: {
@@ -68,18 +67,18 @@ const ParticleComponent = () => {
                 default: "bounce",
               },
               random: false,
-              speed: 6,
+              speed: 4, // Slower for better performance
               straight: false,
             },
             number: {
               density: {
                 enable: true,
-                area: 800,
+                area: 1000, // Larger area = fewer particles
               },
-              value: 80,
+              value: 60, // Reduced number of particles
             },
             opacity: {
-              value: 0.5,
+              value: 0.4,
             },
             shape: {
               type: "circle",
@@ -89,11 +88,11 @@ const ParticleComponent = () => {
             },
           },
           detectRetina: true,
+          pauseOnOutsideViewport: true, // Pause when not visible for performance
         }}
       />
     </div>
   );
 };
-
 
 export default ParticleComponent
