@@ -33,7 +33,7 @@ const Project = () => {
     projects?.filter(project => project.category === filter);
 
   return (
-    <section className={`${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-800"} min-h-screen py-16`}>
+    <section className={`${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-800"} min-h-screen py-32`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">

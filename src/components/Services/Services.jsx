@@ -285,7 +285,7 @@ const Services = () => {
 
     return (
         <motion.div 
-            className={`min-h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-800"}`}
+            className={`min-h-screen py-16 ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-800"}`}
             initial="hidden"
             animate="visible"
             variants={containerVariants}

@@ -96,7 +96,7 @@ const About = () => {
                             <div className="md:w-2/3 md:pl-8">
                                 <h2 className={`text-3xl font-bold mb-4 ${darkMode ? "text-blue-400" : "text-blue-600"}`}>Muhammad Tahir</h2>
                                 <p className="text-lg mb-4">
-                                    I'm a passionate Full Stack Developer from a middle-class background, turning complex problems into efficient, scalable solutions. With 3+ years of experience, I specialize in building dynamic applications using the MERN stack.
+                                    I'm a passionate Full Stack Developer from a middle-class background, turning complex problems into efficient, scalable solutions. With 1.5+ years of experience, I specialize in building dynamic applications using the MERN stack.
                                 </p>
                                 <p className="text-lg">
                                     I believe in continuous learning, delivering real value, and writing clean, maintainable code that helps businesses grow and succeed in the digital world.

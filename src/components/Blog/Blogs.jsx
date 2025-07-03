@@ -31,7 +31,7 @@ const Blogs = () => {
     blogs?.filter(blog => blog?.category?.category === selectedCategory);
 
   return (
-    <div className={`${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-800"} min-h-screen`}>
+    <div className={`${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-800"} min-h-screen py-24`}>
       {/* Header */}
       <header className="w-full container mx-auto pt-16 pb-8">
         <div className="flex flex-col items-center">
