@@ -12,9 +12,9 @@ import { categoryReducer } from './redux/reducers/category'
 const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 // Production URL
-export const server = isDevelopment 
+export const server = isDevelopment
   ? "http://localhost:4000"  // Development server
-  : "https://tahir-dev-backend.vercel.app" ; // Production server
+  : "https://tahir-dev-backend.vercel.app"; // Production server
 
 // export const server = "https://tahir-dev-backend.vercel.app"
 

@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { loginUser } from '../../redux/actions/user'
 import { toast } from 'react-hot-toast'
 import Loader from '../Loader'
-import { isAuthenticated, saveToken, saveUser, getToken } from '../../utils/authManager'
+import { saveUser, getUser } from '../../utils/authManager'
 
 const LoginForm = () => {
     const [email, setEmail] = useState("")
@@ -25,9 +25,9 @@ const LoginForm = () => {
 
     // Check if user is already authenticated on component mount
     useEffect(() => {
-        // Check if token exists
-        const token = getToken();
-        if (token || reduxIsAuthenticated) {
+        // Check if user exists in localStorage
+        const user = getUser();
+        if (user || reduxIsAuthenticated) {
             navigate(from);
         }
     }, [navigate, reduxIsAuthenticated, from]);
@@ -43,17 +43,12 @@ const LoginForm = () => {
         try {
             const result = await dispatch(loginUser(email, password));
             
-            // Check for login success and JWT token
-            if (result?.payload?.token) {
-                const token = result.payload.token;
+            // Check for login success and user data
+            if (result?.payload?.user) {
+                const user = result.payload.user;
                 
-                // Save token to localStorage
-                saveToken(token);
-                
-                // Save user data if available
-                if (result.payload.user) {
-                    saveUser(result.payload.user);
-                }
+                // Save user data to localStorage
+                saveUser(user);
                 
                 // Clear fields on success
                 setEmail("");
@@ -65,7 +60,7 @@ const LoginForm = () => {
                 // Navigate immediately to avoid auth issues
                 navigate(from);
             } else {
-                toast.error("Authentication failed - no token received");
+                toast.error("Authentication failed - no user data received");
             }
             
         } catch (error) {

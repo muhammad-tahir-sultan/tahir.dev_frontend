@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 import { registerUser } from '../../redux/actions/user'
 import Loader from '../Loader'
+import { saveUser } from '../../utils/authManager'
 
 const SignUpForm = () => {
     const [name, setName] = useState("")
@@ -89,13 +90,24 @@ const SignUpForm = () => {
         data.set("image", image);
     
         try {
-            await dispatch(registerUser(data));
-    
-            // Only clear fields if registration is successful
-            setName("");
-            setEmail("");
-            setPassword("");
-            setImage("");
+            const result = await dispatch(registerUser(data));
+            
+            // Save user data to localStorage if available
+            if (result?.payload?.user) {
+                saveUser(result.payload.user);
+                
+                // Clear fields on success
+                setName("");
+                setEmail("");
+                setPassword("");
+                setImage("");
+                
+                // Show success message
+                toast.success(result.payload.message || "Registration successful");
+                
+                // Navigate to profile
+                navigate("/profile");
+            }
         } catch (error) {
             console.error("Registration failed:", error);
             toast.error("Something went wrong. Please try again.");

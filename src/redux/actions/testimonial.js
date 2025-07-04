@@ -1,44 +1,29 @@
 import axios from "axios";
 import { server } from "../../store";
-import { getToken } from "../../utils/authManager";
+import { getUser } from "../../utils/authManager";
 
-// Helper function to get auth headers
-const getAuthConfig = (contentType = "application/json") => {
-    const token = getToken();
-    return {
-        headers: {
-            "Content-Type": contentType,
-            ...(token && { "Authorization": `Bearer ${token}` })
-        }
-    };
-};
-
-export const addReview = (description) => async (dispatch) => {
-    try {
-        dispatch({
-            type: "addTestimonialRequest"
-        });
-
-        const config = getAuthConfig();
-        const { data } = await axios.post(`${server}/testimonial/add`, { description }, config);
-
-        dispatch({
-            type: "addTestimonialSuccess",
-            payload: data
-        });
-        
-        return {
-            type: "addTestimonialSuccess",
-            payload: data
-        };
-    } catch (error) {
-        dispatch({
-            type: "addTestimonialFail",
-            payload: error.response?.data?.message || "Failed to add testimonial"
-        });
-        throw error;
+// Create a custom axios instance with default configurations
+const api = axios.create({
+    baseURL: server,
+    withCredentials: false,
+    headers: {
+        "Content-Type": "application/json"
     }
-};
+});
+
+// Add a request interceptor to include user ID in every request
+api.interceptors.request.use(
+    config => {
+        // Get user from localStorage
+        const user = getUser();
+        if (user && user._id) {
+            // Add user ID to request headers
+            config.headers['user-id'] = user._id;
+        }
+        return config;
+    },
+    error => Promise.reject(error)
+);
 
 export const getAllTestimonials = () => async (dispatch) => {
     try {
@@ -46,51 +31,37 @@ export const getAllTestimonials = () => async (dispatch) => {
             type: "getAllTestimonialsRequest"
         });
 
-        const config = getAuthConfig();
-        const { data } = await axios.get(`${server}/testimonials`, config);
+        const { data } = await api.get(`/testimonials`);
 
         dispatch({
             type: "getAllTestimonialsSuccess",
             payload: data
         });
-        
-        return {
-            type: "getAllTestimonialsSuccess",
-            payload: data
-        };
     } catch (error) {
         dispatch({
             type: "getAllTestimonialsFail",
             payload: error.response?.data?.message || "Failed to fetch testimonials"
         });
-        throw error;
     }
 };
 
-export const deleteUserTestimonial = (id) => async (dispatch) => {
+export const addReview = (description) => async (dispatch) => {
     try {
         dispatch({
-            type: "deleteTestimonialRequest"
+            type: "addReviewRequest"
         });
 
-        const config = getAuthConfig();
-        const { data } = await axios.delete(`${server}/testimonial/${id}`, config);
+        const { data } = await api.post(`/testimonial/add`, { description });
 
         dispatch({
-            type: "deleteTestimonialSuccess",
+            type: "addReviewSuccess",
             payload: data
         });
-        
-        return {
-            type: "deleteTestimonialSuccess",
-            payload: data
-        };
     } catch (error) {
         dispatch({
-            type: "deleteTestimonialFail",
-            payload: error.response?.data?.message || "Failed to delete testimonial"
+            type: "addReviewFail",
+            payload: error.response?.data?.message || "Failed to add review"
         });
-        throw error;
     }
 };
 
@@ -100,85 +71,166 @@ export const approveTestimonial = (id) => async (dispatch) => {
             type: "approveTestimonialRequest"
         });
 
-        const config = getAuthConfig();
-        const { data } = await axios.put(`${server}/testimonial/${id}`, {}, config);
+        const { data } = await api.put(`/testimonial/approve/${id}`);
 
         dispatch({
             type: "approveTestimonialSuccess",
             payload: data
         });
-        
-        return {
-            type: "approveTestimonialSuccess",
-            payload: data
-        };
     } catch (error) {
         dispatch({
             type: "approveTestimonialFail",
             payload: error.response?.data?.message || "Failed to approve testimonial"
         });
-        throw error;
     }
 };
 
-export const bulkDeleteTestimonials = (testimonialIds) => async (dispatch) => {
+export const deleteUserTestimonial = (id) => async (dispatch) => {
     try {
-        dispatch({ type: "bulkDeleteTestimonialRequest" });
+        dispatch({
+            type: "deleteUserTestimonialRequest"
+        });
 
-        const config = getAuthConfig();
-        
+        const { data } = await api.delete(`/testimonial/user/${id}`);
+
+        dispatch({
+            type: "deleteUserTestimonialSuccess",
+            payload: data
+        });
+    } catch (error) {
+        dispatch({
+            type: "deleteUserTestimonialFail",
+            payload: error.response?.data?.message || "Failed to delete user testimonial"
+        });
+    }
+};
+
+export const bulkDeleteTestimonials = (ids) => async (dispatch) => {
+    try {
+        dispatch({
+            type: "bulkDeleteTestimonialsRequest"
+        });
+
         // Make individual delete requests for each testimonial
-        const deletePromises = testimonialIds.map(id => 
-            axios.delete(`${server}/testimonial/${id}`, config)
+        const deletePromises = ids.map(id => 
+            api.delete(`/testimonial/user/${id}`)
         );
         
         await Promise.all(deletePromises);
 
-        dispatch({ 
-            type: "bulkDeleteTestimonialSuccess", 
-            payload: `Successfully deleted ${testimonialIds.length} testimonials` 
+        dispatch({
+            type: "bulkDeleteTestimonialsSuccess",
+            payload: { message: "Selected testimonials deleted successfully" }
         });
-        
-        return {
-            success: true,
-            message: `Successfully deleted ${testimonialIds.length} testimonials`
-        };
     } catch (error) {
         dispatch({
-            type: "bulkDeleteTestimonialFail",
-            payload: error.response?.data?.message || "Failed to delete testimonials",
+            type: "bulkDeleteTestimonialsFail",
+            payload: error.response?.data?.message || "Failed to delete testimonials"
         });
-        throw error;
     }
 };
 
-export const bulkApproveTestimonials = (testimonialIds) => async (dispatch) => {
+export const bulkApproveTestimonials = (ids) => async (dispatch) => {
     try {
-        dispatch({ type: "bulkApproveTestimonialRequest" });
+        dispatch({
+            type: "bulkApproveTestimonialsRequest"
+        });
 
-        const config = getAuthConfig();
-        
         // Make individual approve requests for each testimonial
-        const approvePromises = testimonialIds.map(id => 
-            axios.put(`${server}/testimonial/${id}`, {}, config)
+        const approvePromises = ids.map(id => 
+            api.put(`/testimonial/approve/${id}`)
         );
         
         await Promise.all(approvePromises);
 
-        dispatch({ 
-            type: "bulkApproveTestimonialSuccess", 
-            payload: `Successfully approved ${testimonialIds.length} testimonials` 
+        dispatch({
+            type: "bulkApproveTestimonialsSuccess",
+            payload: { message: "Selected testimonials approved successfully" }
         });
-        
-        return {
-            success: true,
-            message: `Successfully approved ${testimonialIds.length} testimonials`
-        };
     } catch (error) {
         dispatch({
-            type: "bulkApproveTestimonialFail",
-            payload: error.response?.data?.message || "Failed to approve testimonials",
+            type: "bulkApproveTestimonialsFail",
+            payload: error.response?.data?.message || "Failed to approve testimonials"
         });
-        throw error;
+    }
+};
+
+export const createTestimonial = (formData) => async (dispatch) => {
+    try {
+        dispatch({
+            type: "createTestimonialRequest"
+        });
+
+        const { data } = await api.post(`/testimonial/create`, formData);
+
+        dispatch({
+            type: "createTestimonialSuccess",
+            payload: data
+        });
+    } catch (error) {
+        dispatch({
+            type: "createTestimonialFail",
+            payload: error.response?.data?.message || "Failed to create testimonial"
+        });
+    }
+};
+
+export const updateTestimonial = (id, formData) => async (dispatch) => {
+    try {
+        dispatch({
+            type: "updateTestimonialRequest"
+        });
+
+        const { data } = await api.put(`/testimonial/${id}`, formData);
+
+        dispatch({
+            type: "updateTestimonialSuccess",
+            payload: data
+        });
+    } catch (error) {
+        dispatch({
+            type: "updateTestimonialFail",
+            payload: error.response?.data?.message || "Failed to update testimonial"
+        });
+    }
+};
+
+export const deleteTestimonial = (id) => async (dispatch) => {
+    try {
+        dispatch({
+            type: "deleteTestimonialRequest"
+        });
+
+        const { data } = await api.delete(`/testimonial/${id}`);
+
+        dispatch({
+            type: "deleteTestimonialSuccess",
+            payload: data
+        });
+    } catch (error) {
+        dispatch({
+            type: "deleteTestimonialFail",
+            payload: error.response?.data?.message || "Failed to delete testimonial"
+        });
+    }
+};
+
+export const getTestimonialDetails = (id) => async (dispatch) => {
+    try {
+        dispatch({
+            type: "getTestimonialDetailsRequest"
+        });
+
+        const { data } = await api.get(`/testimonial/${id}`);
+
+        dispatch({
+            type: "getTestimonialDetailsSuccess",
+            payload: data
+        });
+    } catch (error) {
+        dispatch({
+            type: "getTestimonialDetailsFail",
+            payload: error.response?.data?.message || "Failed to fetch testimonial details"
+        });
     }
 };

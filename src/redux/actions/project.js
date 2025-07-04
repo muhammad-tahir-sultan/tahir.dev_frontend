@@ -1,91 +1,128 @@
 import axios from "axios";
 import { server } from "../../store";
-import { getToken } from "../../utils/authManager";
+import { getUser } from "../../utils/authManager";
 
-// Helper function to get auth headers
-const getAuthConfig = (contentType = "application/json") => {
-    const token = getToken();
-    return {
-        headers: {
-            "Content-Type": contentType,
-            ...(token && { "Authorization": `Bearer ${token}` })
-        },
-        withCredentials: false
-    };
-};
+// Create a custom axios instance with default configurations
+const api = axios.create({
+    baseURL: server,
+    withCredentials: false,
+    headers: {
+        "Content-Type": "application/json"
+    }
+});
 
-export const addProject = (formData) => async (dispatch) => {
+// Add a request interceptor to include user ID in every request
+api.interceptors.request.use(
+    config => {
+        // Get user from localStorage
+        const user = getUser();
+        if (user && user._id) {
+            // Add user ID to request headers
+            config.headers['user-id'] = user._id;
+        }
+        return config;
+    },
+    error => Promise.reject(error)
+);
+
+export const getAllProjects = () => async (dispatch) => {
     try {
         dispatch({
-            type: "addProjectRequest"
+            type: "getAllProjectsRequest"
         });
 
-        const config = {
-            headers: { 
-                "Content-Type": "multipart/form-data",
-                "Authorization": `Bearer ${getToken()}`
-            },
-            withCredentials: false
-        };
-
-        const { data } = await axios.post(
-            `${server}/project/new`,
-            formData,
-            config
-        );
+        const { data } = await api.get(`${server}/projects`);
 
         dispatch({
-            type: "addProjectSuccess",
+            type: "getAllProjectsSuccess",
+            payload: data
+        });
+    } catch (error) {
+        dispatch({
+            type: "getAllProjectsFail",
+            payload: error.response?.data?.message || "Failed to fetch projects"
+        });
+    }
+};
+
+export const createProject = (formData) => async (dispatch) => {
+    try {
+        dispatch({
+            type: "createProjectRequest"
+        });
+
+        const { data } = await api.post(`${server}/project/new`, formData, {
+            headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        dispatch({
+            type: "createProjectSuccess",
             payload: data
         });
         
         return {
-            type: "addProjectSuccess",
+            type: "createProjectSuccess",
             payload: data
         };
     } catch (error) {
         dispatch({
-            type: "addProjectFail",
-            payload: error.response?.data?.message || "Failed to add project"
+            type: "createProjectFail",
+            payload: error.response?.data?.message || "Failed to create project"
         });
         throw error;
     }
 };
 
-export const editProject = (formData, id) => async (dispatch) => {
+// Alias for createProject to maintain backward compatibility
+export const addProject = (formData) => async (dispatch) => {
+    try {
+        const result = await dispatch(createProject(formData));
+        return {
+            type: "addProjectSuccess",
+            payload: result.payload
+        };
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateProject = (id, formData) => async (dispatch) => {
     try {
         dispatch({
-            type: "editProjectRequest"
+            type: "updateProjectRequest"
         });
 
-        const config = {
-            headers: { 
-                "Content-Type": "multipart/form-data",
-                "Authorization": `Bearer ${getToken()}`
-            },
-            withCredentials: false
-        };
-
-        const { data } = await axios.put(
-            `${server}/project/update/${id}`,
-            formData,
-            config
-        );
+        const { data } = await api.put(`${server}/project/${id}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" }
+        });
 
         dispatch({
-            type: "editProjectSuccess",
+            type: "updateProjectSuccess",
             payload: data
         });
         
         return {
-            type: "editProjectSuccess",
+            type: "updateProjectSuccess",
             payload: data
         };
     } catch (error) {
         dispatch({
-            type: "editProjectFail",
-            payload: error.response?.data?.message || "Failed to edit project"
+            type: "updateProjectFail",
+            payload: error.response?.data?.message || "Failed to update project"
         });
+        throw error;
+    }
+};
+
+// Alias for updateProject to maintain backward compatibility
+export const editProject = (formData, id) => async (dispatch) => {
+    try {
+        const result = await dispatch(updateProject(id, formData));
+        return {
+            type: "editProjectSuccess",
+            payload: result.payload
+        };
+    } catch (error) {
         throw error;
     }
 };
@@ -96,56 +133,42 @@ export const deleteProject = (id) => async (dispatch) => {
             type: "deleteProjectRequest"
         });
 
-        const config = getAuthConfig();
-
-        const { data } = await axios.delete(
-            `${server}/project/delete/${id}`,
-            config
-        );
+        const { data } = await api.delete(`${server}/project/${id}`);
 
         dispatch({
             type: "deleteProjectSuccess",
             payload: data
         });
-        
-        return {
-            type: "deleteProjectSuccess",
-            payload: data
-        };
     } catch (error) {
         dispatch({
             type: "deleteProjectFail",
             payload: error.response?.data?.message || "Failed to delete project"
         });
-        throw error;
     }
 };
 
-export const getAllProjects = () => async (dispatch) => {
+export const bulkDeleteProjects = (projectIds) => async (dispatch) => {
     try {
         dispatch({
-            type: "getAllProjectsRequest"
+            type: "bulkDeleteProjectsRequest"
         });
 
-        const config = getAuthConfig();
-
-        const { data } = await axios.get(`${server}/projects`, config);
+        // Make individual delete requests for each project
+        const deletePromises = projectIds.map(id => 
+            api.delete(`${server}/project/${id}`)
+        );
+        
+        await Promise.all(deletePromises);
 
         dispatch({
-            type: "getAllProjectsSuccess",
-            payload: data
+            type: "bulkDeleteProjectsSuccess",
+            payload: { message: "Selected projects deleted successfully" }
         });
-        
-        return {
-            type: "getAllProjectsSuccess",
-            payload: data
-        };
     } catch (error) {
         dispatch({
-            type: "getAllProjectsFail",
-            payload: error.response?.data?.message || "Failed to fetch projects"
+            type: "bulkDeleteProjectsFail",
+            payload: error.response?.data?.message || "Failed to delete projects"
         });
-        throw error;
     }
 };
 
@@ -155,55 +178,16 @@ export const getProjectDetails = (id) => async (dispatch) => {
             type: "getProjectDetailsRequest"
         });
 
-        const config = getAuthConfig();
-
-        const { data } = await axios.get(`${server}/project/${id}`, config);
+        const { data } = await api.get(`${server}/project/${id}`);
 
         dispatch({
             type: "getProjectDetailsSuccess",
             payload: data
         });
-        
-        return {
-            type: "getProjectDetailsSuccess",
-            payload: data
-        };
     } catch (error) {
         dispatch({
             type: "getProjectDetailsFail",
             payload: error.response?.data?.message || "Failed to fetch project details"
         });
-        throw error;
-    }
-};
-
-export const bulkDeleteProjects = (projectIds) => async (dispatch) => {
-    try {
-        dispatch({ type: "bulkDeleteProjectRequest" });
-
-        const config = getAuthConfig();
-        
-        // Make individual delete requests for each project
-        const deletePromises = projectIds.map(id => 
-            axios.delete(`${server}/project/delete/${id}`, config)
-        );
-        
-        await Promise.all(deletePromises);
-
-        dispatch({ 
-            type: "bulkDeleteProjectSuccess", 
-            payload: `Successfully deleted ${projectIds.length} projects` 
-        });
-        
-        return {
-            success: true,
-            message: `Successfully deleted ${projectIds.length} projects`
-        };
-    } catch (error) {
-        dispatch({
-            type: "bulkDeleteProjectFail",
-            payload: error.response?.data?.message || "Failed to delete projects",
-        });
-        throw error;
     }
 };

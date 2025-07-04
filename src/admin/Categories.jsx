@@ -11,6 +11,8 @@ const Categories = () => {
   const { darkMode } = useSelector((state) => state.theme);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  console.log('categories in component', categories);
+  
   const deleteCategoryHandle = async (categoryId) => {
     setIsDeleting(true);
     try {

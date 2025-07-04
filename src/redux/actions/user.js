@@ -1,103 +1,78 @@
 import axios from "axios"
 import { server } from "../../store"
-import { saveToken, getToken, saveUser, getUser, clearAuth, getAuthHeaders } from '../../utils/authManager'
+import { saveUser, getUser, clearAuth } from '../../utils/authManager'
 
 // Create a custom axios instance with default configurations
 const api = axios.create({
     baseURL: server,
-    withCredentials: false, // No need for credentials with token-based auth
+    withCredentials: false,
     headers: {
         "Content-Type": "application/json"
     }
 });
 
-// Add a request interceptor to include auth token in every request
+// Add a request interceptor to include user ID in every request
 api.interceptors.request.use(
     config => {
-        // Get token from localStorage
-        const token = getToken();
-        if (token) {
-            // Add token to request headers
-            config.headers['Authorization'] = `Bearer ${token}`;
+        // Get user from localStorage
+        const user = getUser();
+        if (user && user._id) {
+            // Add user ID to request headers
+            config.headers['user-id'] = user._id;
         }
         return config;
     },
     error => Promise.reject(error)
 );
 
-// Add a response interceptor to handle auth responses
-api.interceptors.response.use(
-    response => {
-        // Check for JWT token in response
-        const token = response.data?.token;
-        if (token) {
-            // Save token to localStorage
-            saveToken(token);
-            
-            // If response contains user data, save it too
-            if (response.data?.user) {
-                saveUser(response.data.user);
-            }
-        }
-        
-        return response;
-    },
-    error => {
-        // Handle auth errors
-        if (error.response?.status === 401) {
-            // Clear auth data
-            clearAuth();
-        }
-        
-        return Promise.reject(error);
-    }
-);
-
 export const loadUser = () => async (dispatch) => {
     try {
-        // Don't try to load user if there's no auth token
-        if (!getToken()) {
-            return dispatch({
+        // Don't try to load user if there's no user data in localStorage
+        const user = getUser();
+        if (!user) {
+            console.log("No user data found, aborting loadUser");
+            dispatch({
                 type: "loadUserFail",
-                payload: "No authentication token",
+                payload: "No authentication data",
             });
+            return null;
         }
         
         dispatch({
             type: "loadUserRequest",
         });
         
-        // Set a timeout to prevent hanging requests
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Request timeout')), 3000)
-        );
-        
-        // Wrap the API call in a Promise.race to add timeout
-        const { data } = await Promise.race([
-            api.get(`/user/profile`),
-            timeoutPromise
-        ]);
-        
-        // Save user data to localStorage
-        if (data.user) {
-            saveUser(data.user);
+        // If we have user data in localStorage, try to get fresh data from server
+        try {
+            const { data } = await api.get(`/user/profile`);
+            
+            // Update user data in localStorage
+            if (data.user) {
+                saveUser(data.user);
+            }
+            
+            dispatch({
+                type: "loadUserSuccess",
+                payload: data
+            });
+            
+            return data;
+        } catch (err) {
+            console.log("Error fetching user profile, using localStorage data");
+            
+            dispatch({
+                type: "loadUserSuccess",
+                payload: { user }
+            });
+            
+            return { user };
         }
-
-        dispatch({
-            type: "loadUserSuccess",
-            payload: data,
-        });
-        
-        return data;
     } catch (error) {
-        // Clear auth data on profile load failure if unauthorized
-        if (error.response?.status === 401) {
-            clearAuth();
-        }
+        console.error("Error loading user:", error);
         
         dispatch({
             type: "loadUserFail",
-            payload: error.response?.data?.message || "Authentication failed",
+            payload: error.response?.data?.message || "Failed to load user data",
         });
         
         return null;
@@ -110,17 +85,11 @@ export const loginUser = (email, password) => async (dispatch) => {
             type: "loginUserRequest"
         });
         
-        const { data } = await api.post(`/user/login`, { email, password });
+        const { data } = await api.post(`${server}/user/login`, { email, password });
         
-        // Handle JWT token from response
-        if (data.token) {
-            // Save token to localStorage
-            saveToken(data.token);
-            
-            // Save user data if available
-            if (data.user) {
-                saveUser(data.user);
-            }
+        // Save user data if available
+        if (data.user) {
+            saveUser(data.user);
         }
 
         dispatch({
@@ -146,17 +115,13 @@ export const registerUser = (formData) => async (dispatch) => {
         });
 
         // For multipart/form-data, we need to set the header specifically
-        const { data } = await api.post('/user/register', formData, {
+        const { data } = await api.post(`${server}/user/register`, formData, {
             headers: { "Content-Type": "multipart/form-data" }
         });
 
         console.log("Registration response:", data);
         
-        // Save token and user data if available
-        if (data.token) {
-            saveToken(data.token);
-        }
-        
+        // Save user data if available
         if (data.user) {
             saveUser(data.user);
         }
@@ -165,12 +130,15 @@ export const registerUser = (formData) => async (dispatch) => {
             type: "registerUserSuccess",
             payload: data
         });
+        
+        return { type: "registerUserSuccess", payload: data };
     } catch (error) {
         console.error("Registration error:", error);
         dispatch({
             type: "registerUserFail",
             payload: error.response?.data?.message || "Registration failed"
         });
+        throw error;
     }
 };
 
@@ -180,7 +148,7 @@ export const forgotPassword = (email) => async (dispatch) => {
             type: "forgotPasswordRequest"
         });
 
-        const { data } = await api.post('/forgotpassword', { email });
+        const { data } = await api.post(`${server}/forgotpassword`, { email });
 
         dispatch({
             type: "forgotPasswordSuccess",
@@ -224,7 +192,7 @@ export const updateProfile = (formData) => async (dispatch) => {
         });
 
         // For multipart/form-data, we need to set the header specifically
-        const { data } = await api.put('/user/update', formData, {
+        const { data } = await api.put(`${server}/user/update`, formData, {
             headers: { "Content-Type": "multipart/form-data" }
         });
 
@@ -251,7 +219,7 @@ export const deleteProfile = () => async (dispatch) => {
             type: "deleteProfileRequest"
         });
 
-        const { data } = await api.delete('/user/delete');
+        const { data } = await api.delete(`${server}/user/delete`);
 
         // Clear all auth data
         clearAuth();
@@ -271,27 +239,24 @@ export const deleteProfile = () => async (dispatch) => {
 export const logoutUser = () => async (dispatch) => {
     try {
         dispatch({
-            type: "logoutUserRequest",
+            type: "logoutUserRequest"
         });
 
-        // Use the custom API instance instead of axios directly
-        const { data } = await api.get(`/user/logout`);
-        
-        // Clear all authentication data
+        // Clear user data from localStorage
         clearAuth();
 
         dispatch({
             type: "logoutUserSuccess",
-            payload: data,
+            payload: { message: "Logged out successfully" }
         });
-    } catch (error) {
-        // Clear auth data even if logout API fails
-        clearAuth();
         
+        return { success: true };
+    } catch (error) {
         dispatch({
             type: "logoutUserFail",
-            payload: error.response?.data?.message || "Logout failed",
+            payload: error.message || "Logout failed"
         });
+        return { success: false };
     }
 };
 

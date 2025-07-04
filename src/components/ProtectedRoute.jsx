@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Navigate, useLocation } from 'react-router-dom';
-import { isAuthenticated, getToken } from '../utils/authManager';
+import { isAuthenticated, getUser } from '../utils/authManager';
 import { loadUser } from '../redux/actions/user';
 
 /**
@@ -22,28 +22,13 @@ const ProtectedRoute = ({ children }) => {
         return;
       }
       
-      // Check if we have a valid token
+      // Check if we have user data in localStorage
       if (isAuthenticated()) {
         try {
-          // Try to load user data with timeout protection
-          const timeoutPromise = new Promise(resolve => {
-            setTimeout(() => resolve({ timedOut: true }), 2000);
-          });
-          
-          const result = await Promise.race([
-            dispatch(loadUser()),
-            timeoutPromise
-          ]);
-          
-          // If timed out but we have a token, proceed anyway
-          if (result?.timedOut && isAuthenticated()) {
-            // We have a token, so we'll assume auth is valid even if API is slow
-          }
+          // Load user data from localStorage into Redux state
+          await dispatch(loadUser());
         } catch (err) {
-          // Error loading user but we have a token, continue anyway
-          if (isAuthenticated()) {
-            // Continue with protected route access
-          }
+          console.error("Error loading user from localStorage:", err);
         }
       }
       
@@ -56,7 +41,7 @@ const ProtectedRoute = ({ children }) => {
     // Safety timeout to prevent infinite loading
     const safetyTimeout = setTimeout(() => {
       setLoading(false);
-    }, 2000);
+    }, 1000);
     
     return () => clearTimeout(safetyTimeout);
   }, [dispatch, reduxIsAuthenticated, user]);

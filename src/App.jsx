@@ -35,7 +35,7 @@ import AddCategory from './admin/AddCategory.jsx'
 import Categories from './admin/Categories.jsx'
 import EditCategory from './admin/EditCategory.jsx'
 import AuthCheck from './AuthCheck.jsx'
-import { getToken, isAuthenticated, isTokenExpired, debugAuth } from './utils/authManager.js'
+import { isAuthenticated, getUser } from './utils/authManager.js'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 const App = () => {
@@ -58,41 +58,33 @@ const HeaderWithRoutes = () => {
   const { user, loading, isAuthenticated: reduxIsAuthenticated } = useSelector(state => state.user);
   const [authChecked, setAuthChecked] = useState(false);
   const location = useLocation();
-  
+
   // Initialize authentication on component mount
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Check if we have a token in localStorage
-        const token = getToken();
-        
-        if (token && !isTokenExpired(token)) {
-          // Token is valid, try to load user data with timeout protection
-          const timeoutPromise = new Promise(resolve => {
-            setTimeout(() => resolve({ timedOut: true }), 2000);
-          });
-          
-          await Promise.race([
-            dispatch(loadUser()),
-            timeoutPromise
-          ]);
+        // Check if we have user data in localStorage
+        if (isAuthenticated()) {
+          // User data exists, load it into Redux
+          await dispatch(loadUser());
         }
       } catch (err) {
         // Error handled silently
+        console.error("Error loading user data:", err);
       } finally {
         // Mark auth as checked regardless of outcome
         setAuthChecked(true);
       }
     };
-    
+
     if (!authChecked) {
       initAuth();
-      
+
       // Safety timeout to prevent infinite loading
       const safetyTimeout = setTimeout(() => {
         setAuthChecked(true);
-      }, 2000);
-      
+      }, 1000);
+
       return () => clearTimeout(safetyTimeout);
     }
   }, [dispatch, authChecked]);
@@ -127,7 +119,7 @@ const HeaderWithRoutes = () => {
           <Route path='/auth-check' element={<AuthCheck />} />
           <Route path='/login' element={<LoginForm />} />
           <Route path='/register' element={<SignUpForm />} />
-          
+
           {/* Protected User Routes */}
           <Route path='/profile' element={
             <ProtectedRoute>
@@ -206,7 +198,7 @@ const HeaderWithRoutes = () => {
               <UpdateRole />
             </ProtectedRoute>
           } />
-          
+
           {/* Catch-all route for 404 */}
           <Route path='*' element={<PageNotFound />} />
         </Routes>

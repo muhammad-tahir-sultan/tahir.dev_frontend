@@ -1,129 +1,161 @@
 import axios from "axios"
 import { server } from "../../store"
-import { getToken } from "../../utils/authManager";
+import { getUser } from "../../utils/authManager"
 
-// Helper function to get auth headers
-const getAuthConfig = (contentType = "application/json") => {
-    const token = getToken();
-    return {
-        headers: {
-            "Content-Type": contentType,
-            ...(token && { "Authorization": `Bearer ${token}` })
+// Create a custom axios instance with default configurations
+const api = axios.create({
+    baseURL: server,
+    withCredentials: false,
+    headers: {
+        "Content-Type": "application/json"
+    }
+});
+
+// Add a request interceptor to include user ID in every request
+api.interceptors.request.use(
+    config => {
+        // Get user from localStorage
+        const user = getUser();
+        if (user && user._id) {
+            // Add user ID to request headers
+            config.headers['user-id'] = user._id;
         }
-    };
-};
+        return config;
+    },
+    error => Promise.reject(error)
+);
 
 export const getAllUsers = () => async (dispatch) => {
     try {
         dispatch({
             type: "getAllUsersRequest"
-        });
+        })
 
-        const config = getAuthConfig();
-        const { data } = await axios.get(`${server}/users`, config);
+        const { data } = await api.get(`/admin/users`)
 
         dispatch({
             type: "getAllUsersSuccess",
             payload: data
-        });
-        
-        return {
-            type: "getAllUsersSuccess",
-            payload: data
-        };
+        })
     } catch (error) {
         dispatch({
             type: "getAllUsersFail",
             payload: error.response?.data?.message || "Failed to fetch users"
-        });
-        throw error;
+        })
     }
-};
+}
 
-export const updateRole = (id, role) => async (dispatch) => {
+export const updateUserRole = (id, role) => async (dispatch) => {
     try {
         dispatch({
-            type: "updateProfileRequest"
-        });
+            type: "updateUserRoleRequest"
+        })
 
-        const config = getAuthConfig();
-        const { data } = await axios.put(`${server}/user/${id}`, { role }, config);
+        const { data } = await api.put(`/admin/user/${id}`, { role })
 
         dispatch({
-            type: "updateProfileSuccess",
+            type: "updateUserRoleSuccess",
             payload: data
-        });
+        })
         
         return {
-            type: "updateProfileSuccess",
+            type: "updateUserRoleSuccess",
             payload: data
-        };
+        }
     } catch (error) {
         dispatch({
-            type: "updateProfileFail",
-            payload: error.response?.data?.message || "Failed to update role"
-        });
-        throw error;
+            type: "updateUserRoleFail",
+            payload: error.response?.data?.message || "Failed to update user role"
+        })
+        throw error
     }
-};
+}
 
-export const deleteUserProfile = (id) => async (dispatch) => {
+// Alias for updateUserRole to maintain backward compatibility
+export const updateRole = (id, role) => async (dispatch) => {
+    try {
+        const result = await dispatch(updateUserRole(id, role))
+        return {
+            type: "updateProfileSuccess",
+            payload: result.payload
+        }
+    } catch (error) {
+        throw error
+    }
+}
+
+export const getUserDetails = (id) => async (dispatch) => {
+    try {
+        dispatch({
+            type: "getUserDetailsRequest"
+        })
+
+        const { data } = await api.get(`/admin/user/${id}`)
+
+        dispatch({
+            type: "getUserDetailsSuccess",
+            payload: data
+        })
+        
+        return data
+    } catch (error) {
+        dispatch({
+            type: "getUserDetailsFail",
+            payload: error.response?.data?.message || "Failed to fetch user details"
+        })
+        throw error
+    }
+}
+
+export const deleteUser = (id) => async (dispatch) => {
     try {
         dispatch({
             type: "deleteUserRequest"
-        });
+        })
 
-        const config = getAuthConfig();
-        const { data } = await axios.delete(`${server}/user/${id}`, config);
+        const { data } = await api.delete(`/admin/user/${id}`)
 
         dispatch({
             type: "deleteUserSuccess",
             payload: data
-        });
-        
-        return {
-            type: "deleteUserSuccess",
-            payload: data
-        };
+        })
     } catch (error) {
         dispatch({
             type: "deleteUserFail",
             payload: error.response?.data?.message || "Failed to delete user"
-        });
-        throw error;
+        })
     }
-};
+}
+
+// Alias for deleteUser to maintain backward compatibility
+export const deleteUserProfile = (id) => async (dispatch) => {
+    return dispatch(deleteUser(id));
+}
 
 export const bulkDeleteUsers = (userIds) => async (dispatch) => {
     try {
-        dispatch({ type: "bulkDeleteUserRequest" });
+        dispatch({
+            type: "bulkDeleteUsersRequest"
+        })
 
-        const config = getAuthConfig();
-        
         // Make individual delete requests for each user
         const deletePromises = userIds.map(id => 
-            axios.delete(`${server}/user/${id}`, config)
-        );
+            api.delete(`/admin/user/${id}`)
+        )
         
-        await Promise.all(deletePromises);
+        await Promise.all(deletePromises)
 
-        dispatch({ 
-            type: "bulkDeleteUserSuccess", 
-            payload: `Successfully deleted ${userIds.length} users` 
-        });
-        
-        return {
-            success: true,
-            message: `Successfully deleted ${userIds.length} users`
-        };
+        dispatch({
+            type: "bulkDeleteUsersSuccess",
+            payload: { message: "Selected users deleted successfully" }
+        })
     } catch (error) {
         dispatch({
-            type: "bulkDeleteUserFail",
-            payload: error.response?.data?.message || "Failed to delete users",
-        });
-        throw error;
+            type: "bulkDeleteUsersFail",
+            payload: error.response?.data?.message || "Failed to delete users"
+        })
     }
-};
+}
 
 
 

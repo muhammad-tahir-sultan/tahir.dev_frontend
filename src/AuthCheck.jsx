@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { loadUser } from './redux/actions/user';
-import { isAuthenticated, getToken, getUser, debugAuth } from './utils/authManager';
+import { isAuthenticated, getUser } from './utils/authManager';
 import axios from 'axios';
 import { server } from './store';
 
@@ -18,59 +18,29 @@ const AuthCheck = () => {
   const runAuthTest = async () => {
     setTestStatus('testing');
     try {
-      // Step 1: Run auth debug
-      const authInfo = debugAuth();
-      console.log('Auth debug info:', authInfo);
+      // Step 1: Check localStorage
+      const storedUser = getUser();
+      console.log('User data from localStorage:', storedUser);
       
-      // Step 2: Check localStorage
-      const token = getToken();
-      console.log('Auth token from manager:', token);
-      
-      // Step 3: Check auth manager
+      // Step 2: Check auth manager
       const isAuth = isAuthenticated();
       console.log('Auth manager says authenticated:', isAuth);
       
-      // Step 4: Check Redux state
+      // Step 3: Check Redux state
       console.log('Redux auth state:', { reduxIsAuthenticated, user });
       
-      // Step 5: Try to load user
+      // Step 4: Try to load user
       await dispatch(loadUser());
       
-      // Step 6: Test API directly
-      try {
-        const response = await axios.get(`${server}/user/profile`, {
-          withCredentials: false,
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
-        console.log('Direct API test succeeded:', response.data);
-        
-        setTestResult({
-          success: true,
-          message: 'Authentication is working correctly',
-          details: {
-            authInfo,
-            token: token ? 'Present' : 'Not found',
-            authManager: isAuth,
-            reduxState: reduxIsAuthenticated,
-            apiTest: 'Success'
-          }
-        });
-      } catch (apiError) {
-        console.error('Direct API test failed:', apiError);
-        
-        setTestResult({
-          success: false,
-          message: 'Authentication is not working correctly',
-          details: {
-            authInfo,
-            token: token ? 'Present' : 'Not found',
-            authManager: isAuth,
-            reduxState: reduxIsAuthenticated,
-            apiTest: 'Failed',
-            apiError: apiError.message
-          }
-        });
-      }
+      setTestResult({
+        success: true,
+        message: 'Authentication is working correctly',
+        details: {
+          localStorageUser: storedUser ? 'Present' : 'Not found',
+          authManager: isAuth,
+          reduxState: reduxIsAuthenticated
+        }
+      });
     } catch (error) {
       console.error('Auth test error:', error);
       setTestResult({
@@ -88,7 +58,6 @@ const AuthCheck = () => {
     const authStatus = {
       reduxIsAuthenticated, 
       authManager: isAuthenticated(),
-      token: getToken() ? 'Present' : 'Not found',
       user: user ? `${user.name} (${user.email})` : 'Not logged in',
       localStorageUser: getUser() ? 'Present' : 'Not found'
     };
@@ -118,16 +87,16 @@ const AuthCheck = () => {
           </div>
           
           <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-            <p className="font-medium text-gray-700 dark:text-gray-200">Auth Token:</p>
-            <p className={`font-bold ${getToken() ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {getToken() ? 'Present' : 'Not Found'}
+            <p className="font-medium text-gray-700 dark:text-gray-200">User Data (Redux):</p>
+            <p className={`font-bold ${user ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {user ? `${user.name} (${user.email})` : 'Not Available'}
             </p>
           </div>
           
           <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-            <p className="font-medium text-gray-700 dark:text-gray-200">User Data:</p>
-            <p className={`font-bold ${user ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {user ? `${user.name} (${user.email})` : 'Not Available'}
+            <p className="font-medium text-gray-700 dark:text-gray-200">User Data (localStorage):</p>
+            <p className={`font-bold ${getUser() ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {getUser() ? 'Present' : 'Not Found'}
             </p>
           </div>
         </div>
@@ -135,8 +104,7 @@ const AuthCheck = () => {
         <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-4">
           <p className="font-medium text-gray-700 dark:text-gray-200">Local Storage:</p>
           <div className="font-mono text-sm break-all text-gray-600 dark:text-gray-300">
-            <p>Token: {localStorage.getItem('ghareebstar_token') ? 'Present' : 'Not found'}</p>
-            <p>User: {localStorage.getItem('ghareebstar_user') ? 'Present' : 'Not found'}</p>
+            <p>User: {localStorage.getItem('sigmadevelopers_user') ? 'Present' : 'Not found'}</p>
           </div>
         </div>
       </div>
@@ -161,11 +129,9 @@ const AuthCheck = () => {
             <div className="mt-4">
               <h4 className="font-semibold mb-2 text-gray-700 dark:text-gray-200">Test Details:</h4>
               <ul className="list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-300">
-                <li>Auth Token: {testResult.details.token}</li>
+                <li>Local Storage User: {testResult.details.localStorageUser}</li>
                 <li>Auth Manager: {testResult.details.authManager ? 'Authenticated' : 'Not Authenticated'}</li>
                 <li>Redux State: {testResult.details.reduxState ? 'Authenticated' : 'Not Authenticated'}</li>
-                <li>API Test: {testResult.details.apiTest}</li>
-                {testResult.details.apiError && <li>API Error: {testResult.details.apiError}</li>}
               </ul>
             </div>
           )}

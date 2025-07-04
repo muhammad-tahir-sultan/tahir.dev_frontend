@@ -1,17 +1,29 @@
 import axios from "axios";
 import { server } from "../../store";
-import { getToken } from "../../utils/authManager";
+import { getUser } from "../../utils/authManager";
 
-// Helper function to get auth headers
-const getAuthConfig = (contentType = "application/json") => {
-    const token = getToken();
-    return {
-        headers: {
-            "Content-Type": contentType,
-            ...(token && { "Authorization": `Bearer ${token}` })
+// Create a custom axios instance with default configurations
+const api = axios.create({
+    baseURL: server,
+    withCredentials: false,
+    headers: {
+        "Content-Type": "application/json"
+    }
+});
+
+// Add a request interceptor to include user ID in every request
+api.interceptors.request.use(
+    config => {
+        // Get user from localStorage
+        const user = getUser();
+        if (user && user._id) {
+            // Add user ID to request headers
+            config.headers['user-id'] = user._id;
         }
-    };
-};
+        return config;
+    },
+    error => Promise.reject(error)
+);
 
 export const getBlogDetails = (id) => async (dispatch) => {
     try {
@@ -19,8 +31,7 @@ export const getBlogDetails = (id) => async (dispatch) => {
             type: "getBlogDetailsRequest"
         });
 
-        const config = getAuthConfig();
-        const { data } = await axios.get(`${server}/blog/${id}`, config);
+        const { data } = await api.get(`/blog/${id}`);
 
         dispatch({
             type: "getBlogDetailsSuccess",
@@ -47,16 +58,14 @@ export const addBlog = (formData) => async (dispatch) => {
         });
 
         // For multipart/form-data, we need different headers
-        const token = getToken();
         const config = {
             headers: {
-                "Content-Type": "multipart/form-data",
-                ...(token && { "Authorization": `Bearer ${token}` })
+                "Content-Type": "multipart/form-data"
             }
         };
         
-        const { data } = await axios.post(
-            `${server}/blog/create`,
+        const { data } = await api.post(
+            `/blog/create`,
             formData,
             config
         );
@@ -86,16 +95,14 @@ export const editBlog = (formData, id) => async (dispatch) => {
         });
 
         // For multipart/form-data, we need different headers
-        const token = getToken();
         const config = {
             headers: {
-                "Content-Type": "multipart/form-data",
-                ...(token && { "Authorization": `Bearer ${token}` })
+                "Content-Type": "multipart/form-data"
             }
         };
         
-        const { data } = await axios.put(
-            `${server}/blog/${id}`,
+        const { data } = await api.put(
+            `/blog/${id}`,
             formData,
             config
         );
@@ -124,11 +131,7 @@ export const deleteBlog = (id) => async (dispatch) => {
             type: "deleteBlogRequest"
         });
 
-        const config = getAuthConfig();
-        const { data } = await axios.delete(
-            `${server}/blog/delete/${id}`,
-            config
-        );
+        const { data } = await api.delete(`/blog/${id}`);
 
         dispatch({
             type: "deleteBlogSuccess",
@@ -154,8 +157,7 @@ export const getAllBlogs = () => async (dispatch) => {
             type: "getAllBlogsRequest"
         });
 
-        const config = getAuthConfig();
-        const { data } = await axios.get(`${server}/blogs/all`, config);
+        const { data } = await api.get(`/blogs/all`);
 
         dispatch({
             type: "getAllBlogsSuccess",
@@ -179,11 +181,9 @@ export const bulkDeleteBlogs = (blogIds) => async (dispatch) => {
     try {
         dispatch({ type: "bulkDeleteBlogRequest" });
 
-        const config = getAuthConfig();
-        
         // Make individual delete requests for each blog
         const deletePromises = blogIds.map(id => 
-            axios.delete(`${server}/blog/delete/${id}`, config)
+            api.delete(`/blog/${id}`)
         );
         
         await Promise.all(deletePromises);

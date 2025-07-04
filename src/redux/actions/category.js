@@ -1,101 +1,127 @@
 import axios from "axios";
 import { server } from "../../store";
-import { getToken } from "../../utils/authManager";
+import { getUser } from "../../utils/authManager";
 
-// Helper function to get auth headers
-const getAuthConfig = (contentType = "application/json") => {
-    const token = getToken();
-    return {
-        headers: {
-            "Content-Type": contentType,
-            ...(token && { "Authorization": `Bearer ${token}` })
+// Create a custom axios instance with default configurations
+const api = axios.create({
+    baseURL: server,
+    withCredentials: false,
+    headers: {
+        "Content-Type": "application/json"
+    }
+});
+
+// Add a request interceptor to include user ID in every request
+api.interceptors.request.use(
+    config => {
+        // Get user from localStorage
+        const user = getUser();
+        if (user && user._id) {
+            // Add user ID to request headers
+            config.headers['user-id'] = user._id;
         }
-    };
+        return config;
+    },
+    error => Promise.reject(error)
+);
+
+export const getAllCategories = () => async (dispatch) => {
+    try {
+        dispatch({
+            type: "getAllCategoriesRequest"
+        });
+        console.log('getAllCategories')
+
+        const { data } = await api.get(`${server}/categories`);
+        console.log('data', data)
+
+        dispatch({
+            type: "getAllCategoriesSuccess",
+            payload: data
+        });
+    } catch (error) {
+        dispatch({
+            type: "getAllCategoriesFail",
+            payload: error.response?.data?.message || "Failed to fetch categories"
+        });
+    }
 };
 
+export const createCategory = (formData) => async (dispatch) => {
+    try {
+        dispatch({
+            type: "createCategoryRequest"
+        });
+
+        const { data } = await api.post(`${server}/category/create`, formData);
+
+        dispatch({
+            type: "createCategorySuccess",
+            payload: data
+        });
+        
+        return {
+            type: "createCategorySuccess",
+            payload: data
+        };
+    } catch (error) {
+        dispatch({
+            type: "createCategoryFail",
+            payload: error.response?.data?.message || "Failed to create category"
+        });
+        throw error;
+    }
+};
+
+// Alias for createCategory to maintain backward compatibility
 export const addCategory = (category) => async (dispatch) => {
     try {
+        const result = await dispatch(createCategory({ category }));
+        return {
+            type: "addCategorySuccess",
+            payload: result.payload
+        };
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateCategory = (id, formData) => async (dispatch) => {
+    try {
         dispatch({
-            type: "addCategoryRequest"
+            type: "updateCategoryRequest"
         });
 
-        const config = getAuthConfig();
-        const { data } = await axios.post(
-            `${server}/category/create`,
-            { category },
-            config
-        );
+        const { data } = await api.put(`${server}/category/${id}`, formData);
 
         dispatch({
-            type: "addCategorySuccess",
+            type: "updateCategorySuccess",
             payload: data
         });
         
         return {
-            type: "addCategorySuccess",
+            type: "updateCategorySuccess",
             payload: data
         };
     } catch (error) {
         dispatch({
-            type: "addCategoryFail",
-            payload: error.response?.data?.message || "Failed to add category"
+            type: "updateCategoryFail",
+            payload: error.response?.data?.message || "Failed to update category"
         });
         throw error;
     }
 };
 
+// Alias for updateCategory to maintain backward compatibility
 export const editCategory = (category, id) => async (dispatch) => {
     try {
-        dispatch({
-            type: "editCategoryRequest"
-        });
-
-        const config = getAuthConfig();
-        const { data } = await axios.put(
-            `${server}/category/${id}`,
-            { category },
-            config
-        );
-
-        dispatch({
-            type: "editCategorySuccess",
-            payload: data
-        });
-        
+        const result = await dispatch(updateCategory(id, { category }));
         return {
             type: "editCategorySuccess",
-            payload: data
+            payload: result.payload
         };
     } catch (error) {
-        dispatch({
-            type: "editCategoryFail",
-            payload: error.response?.data?.message || "Failed to edit category"
-        });
         throw error;
-    }
-};
-
-export const getCategoryDetails = (id) => async (dispatch) => {
-    try {
-        dispatch({
-            type: "getCategoryRequest"
-        });
-
-        const config = getAuthConfig();
-        const { data } = await axios.get(
-            `${server}/category/${id}`,
-            config
-        );
-
-        dispatch({
-            type: "getCategorySuccess",
-            payload: data
-        });
-    } catch (error) {
-        dispatch({
-            type: "getCategoryFail",
-            payload: error.response?.data?.message || "Failed to get category"
-        });
     }
 };
 
@@ -105,77 +131,66 @@ export const deleteCategory = (id) => async (dispatch) => {
             type: "deleteCategoryRequest"
         });
 
-        const config = getAuthConfig();
-        const { data } = await axios.delete(
-            `${server}/category/${id}`,
-            config
-        );
+        const { data } = await api.delete(`${server}/category/${id}`);
 
         dispatch({
             type: "deleteCategorySuccess",
             payload: data
         });
-        
-        return {
-            type: "deleteCategorySuccess",
-            payload: data
-        };
     } catch (error) {
         dispatch({
             type: "deleteCategoryFail",
             payload: error.response?.data?.message || "Failed to delete category"
-        });
-        throw error;
-    }
-};
-
-export const getAllCategories = () => async (dispatch) => {
-    try {
-        dispatch({
-            type: "getAllCategoryRequest"
-        });
-
-        const config = getAuthConfig();
-        const { data } = await axios.get(`${server}/categories/all`, config);
-
-        dispatch({
-            type: "getAllCategorySuccess",
-            payload: data
-        });
-    } catch (error) {
-        dispatch({
-            type: "getAllCategorysFail",
-            payload: error.response?.data?.message || "Failed to fetch categories"
         });
     }
 };
 
 export const bulkDeleteCategories = (categoryIds) => async (dispatch) => {
     try {
-        dispatch({ type: "bulkDeleteCategoryRequest" });
+        dispatch({
+            type: "bulkDeleteCategoriesRequest"
+        });
 
-        const config = getAuthConfig();
-        
         // Make individual delete requests for each category
         const deletePromises = categoryIds.map(id => 
-            axios.delete(`${server}/category/${id}`, config)
+            api.delete(`${server}/category/${id}`)
         );
         
         await Promise.all(deletePromises);
 
-        dispatch({ 
-            type: "bulkDeleteCategorySuccess", 
-            payload: `Successfully deleted ${categoryIds.length} categories` 
+        dispatch({
+            type: "bulkDeleteCategoriesSuccess",
+            payload: { message: "Selected categories deleted successfully" }
+        });
+    } catch (error) {
+        dispatch({
+            type: "bulkDeleteCategoriesFail",
+            payload: error.response?.data?.message || "Failed to delete categories"
+        });
+    }
+};
+
+export const getCategoryDetails = (id) => async (dispatch) => {
+    try {
+        dispatch({
+            type: "getCategoryDetailsRequest"
+        });
+
+        const { data } = await api.get(`${server}/category/${id}`);
+
+        dispatch({
+            type: "getCategoryDetailsSuccess",
+            payload: data
         });
         
         return {
-            success: true,
-            message: `Successfully deleted ${categoryIds.length} categories`
+            type: "getCategorySuccess",
+            payload: data
         };
     } catch (error) {
         dispatch({
-            type: "bulkDeleteCategoryFail",
-            payload: error.response?.data?.message || "Failed to delete categories",
+            type: "getCategoryDetailsFail",
+            payload: error.response?.data?.message || "Failed to fetch category details"
         });
         throw error;
     }
