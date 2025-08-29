@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import Typewriter from 'typewriter-effect';
+import { motion } from 'framer-motion';
 
 const HeroSection = () => {
     const { darkMode } = useSelector((state) => state.theme);
 
-    const originalText = "I craft dynamic, scalable, and user-friendly web applications that drive business growth.";
+    const originalText = "Transforming ideas into exceptional digital experiences with clean code and innovative solutions.";
 
     const [displayedText, setDisplayedText] = useState(originalText);
 
@@ -151,8 +152,8 @@ const HeroSection = () => {
                             
                             {/* Hero Image */}
                             <img 
-                                src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1469&q=80" 
-                                alt="Developer working on code" 
+                                src="/tahir.png" 
+                                alt="Muhammad Tahir - Full Stack Developer" 
                                 className="relative z-10 rounded-3xl shadow-xl object-cover w-full max-w-xl lg:max-w-2xl mx-auto transform transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl" 
                             />
                             

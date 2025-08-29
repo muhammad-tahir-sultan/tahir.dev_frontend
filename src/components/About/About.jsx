@@ -91,12 +91,12 @@ const About = () => {
                     >
                         <div className="flex flex-col md:flex-row items-center">
                             <div className="md:w-1/3 mb-6 md:mb-0 flex justify-center">
-                                <img className="h-48 w-48 rounded-full object-cover shadow-lg" src="/logo.png" alt="Muhammad Tahir" />
+                                <img className="h-48 w-48 rounded-full object-cover shadow-lg" src="/tahir.png" alt="Muhammad Tahir" />
                             </div>
                             <div className="md:w-2/3 md:pl-8">
                                 <h2 className={`text-3xl font-bold mb-4 ${darkMode ? "text-blue-400" : "text-blue-600"}`}>Muhammad Tahir</h2>
                                 <p className="text-lg mb-4">
-                                    I'm a passionate Full Stack Developer from a middle-class background, turning complex problems into efficient, scalable solutions. With 1.5+ years of experience, I specialize in building dynamic applications using the MERN stack.
+                                    I'm a passionate Full Stack Developer from a middle-class background, turning complex problems into efficient, scalable solutions. With 2.5+ years of experience, I specialize in building dynamic applications using the MERN stack.
                                 </p>
                                 <p className="text-lg">
                                     I believe in continuous learning, delivering real value, and writing clean, maintainable code that helps businesses grow and succeed in the digital world.
