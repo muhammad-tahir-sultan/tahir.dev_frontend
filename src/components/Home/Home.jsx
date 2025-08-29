@@ -4,8 +4,7 @@ import Testimonials from '../Testimonials'
 import HeroSection from '../layout/HeroSection'
 import ServicesCard from '../ServicesCard'
 import IndustryExperince from '../IndustryExperince'
-import Education from '../Education/Education'
-import Experience from '../Experience/Experience'
+// import Experience from '../Experience/Experience'
 import { useSelector } from 'react-redux'
 import { motion } from 'framer-motion'
 
@@ -34,23 +33,15 @@ const Home = () => {
         <HeroSection />
       </motion.div>
       
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.1 }}
-        variants={sectionVariants}
-      >
-        <Education />
-      </motion.div>
       
-      <motion.div
+      {/* <motion.div
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.1 }}
         variants={sectionVariants}
       >
         <Experience />
-      </motion.div>
+      </motion.div> */}
       
       <motion.div
         initial="hidden"
