@@ -6,6 +6,7 @@ import { testimonialReducer } from './redux/reducers/testimonial'
 import { themeReducer } from './redux/reducers/theme'
 import { blogReducer } from './redux/reducers/blog'
 import { categoryReducer } from './redux/reducers/category'
+import { commentReducer } from './redux/reducers/comment'
 
 // Get server URL from environment or use default
 // Check for development environment
@@ -27,6 +28,7 @@ export const store = configureStore({
     blog: blogReducer,
     category: categoryReducer,
     theme: themeReducer,
+    comment: commentReducer,
   },
 })
 
