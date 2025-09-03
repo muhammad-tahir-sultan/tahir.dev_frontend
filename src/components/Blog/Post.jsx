@@ -1,19 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllProjects } from '../../redux/actions/project';
+import { getAllBlogs } from '../../redux/actions/blog';
 import toast from 'react-hot-toast';
 import { useParams, Link } from 'react-router-dom';
 import { getBlogDetails } from '../../redux/actions/blog';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Loader from '../Loader';
+import Comments from './Comments';
+import ShareButtons from './ShareButtons';
+import TableOfContents from './TableOfContents';
 
 function Blog() {
     const params = useParams();
     const dispatch = useDispatch();
-    const { blog, loading } = useSelector(state => state.blog);
+    const { blog, loading, blogs } = useSelector(state => state.blog);
     const { error } = useSelector(state => state.project);
     const { darkMode } = useSelector((state) => state.theme);
     const [readingProgress, setReadingProgress] = useState(0);
+    const contentRef = useRef(null);
+    const [relatedPosts, setRelatedPosts] = useState([]);
 
     useEffect(() => {
         if (error) {
@@ -22,7 +28,24 @@ function Blog() {
         }
 
         dispatch(getBlogDetails(params.id));
+        dispatch(getAllBlogs());
     }, [error, params.id, dispatch]);
+
+
+
+    // Find related posts based on category
+    useEffect(() => {
+        if (blog && blogs) {
+            const related = blogs
+                .filter(post => 
+                    post._id !== blog._id && 
+                    post?.category?.category === blog?.category?.category
+                )
+                .slice(0, 3);
+                
+            setRelatedPosts(related);
+        }
+    }, [blog, blogs]);
 
     // Reading progress effect
     useEffect(() => {
@@ -57,17 +80,38 @@ function Blog() {
     }
 
     return (
-        <div className={`${darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-800"} min-h-screen`}>
+        <div className={`${darkMode ? "bg-black-900 text-white" : "bg-gray-50 text-gray-800"} min-h-screen`}>
             {/* Reading Progress Bar */}
-            <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
+            <div className="fixed top-0 left-0 w-full h-1.5 bg-gray-200 dark:bg-gray-800 z-50">
                 <motion.div 
-                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
+                    className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-blue-600 shadow-lg"
                     style={{ width: `${readingProgress}%` }}
                     transition={{ duration: 0.1 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                 />
             </div>
+            
+            {/* Reading Time Indicator */}
+            <div className="fixed bottom-6 right-6 z-40">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.5 }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg ${
+                        darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+                    }`}
+                >
+                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium">{Math.ceil((blog?.content?.length || 0) / 200)} min read</span>
+                    <span className="mx-1">•</span>
+                    <span className="text-sm font-medium">{Math.round(readingProgress)}%</span>
+                </motion.div>
+            </div>
 
-            {/* Hero Section */}
+                        {/* Hero Section */}
             <section className="relative overflow-hidden">
                 <div className={`absolute inset-0 ${darkMode ? "bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900" : "bg-gradient-to-br from-blue-50 via-white to-purple-50"}`}>
                     <div className="absolute inset-0 bg-black opacity-20"></div>
@@ -80,6 +124,21 @@ function Blog() {
                         transition={{ duration: 0.8 }}
                         className="max-w-4xl mx-auto text-center"
                     >
+                        {/* Back to Blogs Link */}
+                        <motion.div 
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="mb-8"
+                        >
+                            <Link to="/blogs" className="inline-flex items-center gap-2 text-sm font-medium transition-colors hover:text-blue-500">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                Back to All Articles
+                            </Link>
+                        </motion.div>
+                        
                         {/* Category Badge */}
                         <motion.div 
                             initial={{ opacity: 0, scale: 0.8 }}
@@ -88,28 +147,28 @@ function Blog() {
                             className="inline-block mb-6"
                         >
                             <span className={`px-4 py-2 rounded-full text-sm font-medium ${
-                                darkMode ? "bg-blue-600/20 text-blue-400" : "bg-blue-100 text-blue-700"
+                                darkMode ? "bg-blue-600/30 text-blue-400 border border-blue-800" : "bg-blue-100 text-blue-700 border border-blue-200"
                             }`}>
                                 {blog?.category?.category || "Uncategorized"}
                             </span>
                         </motion.div>
 
                         {/* Title */}
-                        <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                        <h1 className={`text-4xl md:text-6xl font-bold mb-6 leading-tight ${darkMode ? "bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-white" : ""}`}>
                             {blog?.title}
                         </h1>
 
                         {/* Meta Information */}
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 text-lg opacity-80">
+                        <div className="flex flex-wrap items-center justify-center gap-3 mb-8 text-lg opacity-80">
                             <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center shadow-lg">
                                     <span className="text-white font-bold text-sm">
                                         {blog?.author?.charAt(0) || 'A'}
                                     </span>
-                </div>
+                                </div>
                                 <span>By {blog?.author || 'Anonymous'}</span>
-                    </div>
-                            <span>•</span>
+                            </div>
+                            <span className="hidden sm:inline">•</span>
                             <span>
                                 {new Date(blog?.createdAt || Date.now()).toLocaleDateString('en-US', {
                                     year: 'numeric',
@@ -117,9 +176,14 @@ function Blog() {
                                     day: 'numeric'
                                 })}
                             </span>
-                            <span>•</span>
-                            <span>{Math.ceil((blog?.content?.length || 0) / 200)} min read</span>
-                </div>
+                            <span className="hidden sm:inline">•</span>
+                            <span className="flex items-center gap-1">
+                                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {Math.ceil((blog?.content?.length || 0) / 200)} min read
+                            </span>
+                        </div>
 
                         {/* Featured Image */}
                         {blog?.image?.url && (
@@ -127,66 +191,218 @@ function Blog() {
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.4 }}
-                                className="relative rounded-2xl overflow-hidden shadow-2xl mb-8"
+                                className="relative rounded-2xl overflow-hidden shadow-2xl mb-8 group"
                             >
                                 <img 
                                     src={blog?.image?.url} 
                                     alt={blog?.title}
-                                    className="w-full h-64 md:h-96 object-cover"
+                                    className="w-full h-64 md:h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
                                 />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             </motion.div>
                         )}
                     </motion.div>
                 </div>
             </section>
 
-            {/* Main Content */}
+            {/* Main Content with Sidebars */}
             <section className="py-16">
                 <div className="container mx-auto px-4">
-                    <div className="max-w-4xl mx-auto">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* Left Sidebar */}
+                        <motion.aside 
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="lg:col-span-3 hidden lg:block"
+                        >
+                            <div className={`sticky top-24 ${darkMode ? "bg-gray-800" : "bg-white"} rounded-xl shadow-lg p-6 border ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+                                {/* Table of Contents */}
+                                <TableOfContents blog={blog} darkMode={darkMode} />
+                                
+                                {/* Share Article */}
+                                <ShareButtons blog={blog} darkMode={darkMode} />
+                            </div>
+                        </motion.aside>
+                        
+                        {/* Main Content */}
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.6 }}
-                            className={`prose prose-lg max-w-none ${
+                            className="lg:col-span-6"
+                        >
+                            <div ref={contentRef} className={`prose prose-lg max-w-none ${
                                 darkMode 
                                     ? "prose-invert prose-headings:text-white prose-p:text-gray-300 prose-strong:text-white prose-a:text-blue-400" 
                                     : "prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-a:text-blue-600"
-                            }`}
-                        >
-                            <div 
-                                dangerouslySetInnerHTML={{ __html: blog?.content }} 
-                                className="leading-relaxed text-lg"
-                            />
-                        </motion.div>
+                            }`}>
+                                <div 
+                                    dangerouslySetInnerHTML={{ __html: blog?.content }} 
+                                    className="leading-relaxed text-lg"
+                                />
+                            </div>
 
-                        {/* Tags */}
-                        {blog?.tags && blog.tags.length > 0 && (
+                            {/* Tags */}
+                            {blog?.tags && blog.tags.length > 0 && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.8 }}
+                                    className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700"
+                                >
+                                    <h3 className="text-lg font-semibold mb-4">Tags:</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {blog.tags.map((tag, index) => (
+                                            <span 
+                                                key={index}
+                                                className={`px-3 py-1 rounded-full text-sm ${
+                                                    darkMode 
+                                                        ? "bg-gray-700 text-gray-300" 
+                                                        : "bg-gray-100 text-gray-700"
+                                                }`}
+                                            >
+                                                #{tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                            
+                            {/* Mobile Table of Contents */}
                             <motion.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.8 }}
-                                className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700"
+                                transition={{ delay: 0.7 }}
+                                className="mt-8 lg:hidden"
                             >
-                                <h3 className="text-lg font-semibold mb-4">Tags:</h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {blog.tags.map((tag, index) => (
-                                        <span 
-                                            key={index}
-                                            className={`px-3 py-1 rounded-full text-sm ${
-                                                darkMode 
-                                                    ? "bg-gray-700 text-gray-300" 
-                                                    : "bg-gray-100 text-gray-700"
-                                            }`}
-                                        >
-                                            #{tag}
-                        </span>
-                                    ))}
-                                </div>
+                                <details className={`rounded-xl p-4 ${darkMode ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"}`}>
+                                    <summary className="text-lg font-bold cursor-pointer flex items-center">
+                                        <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                                        </svg>
+                                        Table of Contents
+                                    </summary>
+                                    <div className="mt-4">
+                                        <TableOfContents blog={blog} darkMode={darkMode} />
+                                    </div>
+                                </details>
                             </motion.div>
-                        )}
-                        </div>
+                        </motion.div>
+                        
+                        {/* Right Sidebar */}
+                        <motion.aside 
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="lg:col-span-3 hidden lg:block"
+                        >
+                            <div className="space-y-8">
+                                {/* Categories */}
+                                <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-xl shadow-lg p-6 border ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+                                    <h3 className="text-lg font-bold mb-4 flex items-center">
+                                        <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                        </svg>
+                                        Categories
+                                    </h3>
+                                    <div className="space-y-2">
+                                        <Link to={`/blogs?category=${blog?.category?.category || 'Uncategorized'}`} className={`block px-4 py-2 rounded-lg ${
+                                            darkMode 
+                                                ? "bg-blue-600/20 text-blue-400 hover:bg-blue-600/30" 
+                                                : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                                        } transition-colors`}>
+                                            {blog?.category?.category || "Uncategorized"}
+                                        </Link>
+                                        <Link to="/blogs" className={`block px-4 py-2 rounded-lg ${
+                                            darkMode 
+                                                ? "bg-gray-700 text-gray-300 hover:bg-gray-600" 
+                                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                        } transition-colors`}>
+                                            All Categories
+                                        </Link>
+                                    </div>
+                                </div>
+                                
+                                {/* Related Posts */}
+                                <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-xl shadow-lg p-6 border ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+                                    <h3 className="text-lg font-bold mb-4 flex items-center">
+                                        <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                        Related Posts
+                                    </h3>
+                                    
+                                    {relatedPosts.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {relatedPosts.map(post => (
+                                                <Link key={post._id} to={`/blog/${post._id}`} className="group block">
+                                                    <div className="flex gap-3">
+                                                        {post?.image?.url && (
+                                                            <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                                                                <img 
+                                                                    src={post.image.url} 
+                                                                    alt={post.title} 
+                                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <h4 className="font-medium line-clamp-2 group-hover:text-blue-500 transition-colors">
+                                                                {post.title}
+                                                            </h4>
+                                                            <p className={`text-xs mt-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                                                                {new Date(post.createdAt).toLocaleDateString('en-US', {
+                                                                    month: 'short',
+                                                                    day: 'numeric',
+                                                                    year: 'numeric'
+                                                                })}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className={`text-sm italic ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                                            No related posts found.
+                                        </p>
+                                    )}
+                                </div>
+                                
+                                {/* Newsletter */}
+                                <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-xl shadow-lg p-6 border ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+                                    <h3 className="text-lg font-bold mb-4 flex items-center">
+                                        <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        Newsletter
+                                    </h3>
+                                    <p className={`text-sm mb-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                                        Subscribe to our newsletter to get the latest updates.
+                                    </p>
+                                    <form className="space-y-3">
+                                        <input 
+                                            type="email" 
+                                            placeholder="Your email address" 
+                                            className={`w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 transition-all ${
+                                                darkMode 
+                                                    ? "bg-gray-700 border-gray-600 focus:ring-blue-500/30 text-white" 
+                                                    : "bg-white border-gray-300 focus:ring-blue-500/30 text-gray-800"
+                                            }`}
+                                        />
+                                        <button 
+                                            type="submit"
+                                            className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg"
+                                        >
+                                            Subscribe
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </motion.aside>
                     </div>
+                </div>
             </section>
 
             {/* Author Section */}
@@ -245,6 +461,9 @@ function Blog() {
                     </div>
                 </section>
 
+            {/* Comments Section */}
+            <Comments blogId={params.id} />
+
             {/* Navigation */}
             <section className="py-16">
                 <div className="container mx-auto px-4">
@@ -271,7 +490,7 @@ function Blog() {
                                         <p className="text-sm opacity-60">Previous</p>
                                         <p className="font-semibold">Back to Blogs</p>
                                     </div>
-                    </div>
+                                </div>
                             </Link>
                             
                             <div className={`flex-1 p-6 rounded-xl ${darkMode ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"}`}>
@@ -284,10 +503,10 @@ function Blog() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                     </svg>
                                 </div>
-                        </div>
+                            </div>
                         </motion.div>
                     </div>
-            </div>
+                </div>
             </section>
         </div>
     );
